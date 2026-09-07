@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTransactions } from '../hooks/useTransactions';
 import { useForm } from 'react-hook-form';
 import type { Transaction } from '../types';
@@ -8,7 +8,7 @@ import { MdDelete, MdEdit, MdSave, MdCancel, MdArrowBack } from 'react-icons/md'
 const TransactionDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { transactions, updateTransaction, deleteTransaction } = useTransactions();
+  const { transactions, loading, updateTransaction, deleteTransaction } = useTransactions();
   const [isEditing, setIsEditing] = useState(false);
   
   const transaction = transactions.find((t) => t.id === id);
@@ -21,6 +21,14 @@ const TransactionDetail = () => {
     }
   }, [transaction, reset]);
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   if (!transaction) {
     return (
       <div className="text-center py-20">
@@ -32,15 +40,25 @@ const TransactionDetail = () => {
     );
   }
 
-  const onSave = (data: Transaction) => {
-    updateTransaction({ ...data, amount: Number(data.amount) });
-    setIsEditing(false);
+  const onSave = async (data: Transaction) => {
+    try {
+      await updateTransaction({ ...data, amount: Number(data.amount) });
+      setIsEditing(false);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to update transaction');
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this transaction?')) {
-      deleteTransaction(transaction.id);
-      navigate('/');
+      try {
+        await deleteTransaction(transaction.id);
+        navigate('/');
+      } catch (err) {
+        console.error(err);
+        alert('Failed to delete transaction');
+      }
     }
   };
 

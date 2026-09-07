@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { useTransactions } from '../hooks/useTransactions';
 import { MdTrendingUp, MdTrendingDown, MdAccountBalanceWallet } from 'react-icons/md';
 
 const Dashboard = () => {
-  const { transactions } = useTransactions();
+  const { transactions, loading } = useTransactions();
   const [filterType, setFilterType] = useState('All');
   const [filterCategory, setFilterCategory] = useState('All');
 
@@ -39,6 +39,14 @@ const Dashboard = () => {
   const categories = useMemo(() => {
     return ['All', ...new Set(transactions.map(t => t.category))];
   }, [transactions]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">

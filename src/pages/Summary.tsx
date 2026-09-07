@@ -4,7 +4,7 @@ import { useTheme } from '../store/ThemeContext';
 import { MdDarkMode, MdLightMode } from 'react-icons/md';
 
 const Summary = () => {
-  const { transactions } = useTransactions();
+  const { transactions, loading } = useTransactions();
   const { theme, toggleTheme } = useTheme();
 
   const categoryTotals = useMemo(() => {
@@ -20,6 +20,14 @@ const Summary = () => {
   const totalExpenses = useMemo(() => {
     return categoryTotals.reduce((acc, [_, val]) => acc + val, 0);
   }, [categoryTotals]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
@@ -90,7 +98,7 @@ const Summary = () => {
           >
             <h3 className="font-bold mb-4">Storage Info</h3>
             <p className="text-sm text-gray-500">
-              Your data is stored locally in your browser. Clearing your browser cache may remove your transaction history.
+              Your data is securely stored in Supabase Cloud. You can access your budget from any device by logging in.
             </p>
           </div>
         </div>

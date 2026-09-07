@@ -1,23 +1,26 @@
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { useTransactions } from '../hooks/useTransactions';
 import type { Transaction } from '../types';
 
-type FormData = Omit<Transaction, 'id'>;
+type FormData = Omit<Transaction, 'id' | 'user_id' | 'created_at'>;
 
 const AddTransaction = () => {
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
   const { addTransaction } = useTransactions();
   const navigate = useNavigate();
 
-  const onSubmit = (data: FormData) => {
-    const newTransaction: Transaction = {
-      ...data,
-      id: crypto.randomUUID(),
-      amount: Number(data.amount)
-    };
-    addTransaction(newTransaction);
-    navigate('/');
+  const onSubmit = async (data: FormData) => {
+    try {
+      await addTransaction({
+        ...data,
+        amount: Number(data.amount),
+      });
+      navigate('/');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to add transaction');
+    }
   };
 
   return (

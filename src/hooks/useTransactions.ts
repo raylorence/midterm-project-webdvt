@@ -1,56 +1,95 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Transaction } from '../types';
+import { supabase } from '../lib/supabase';
+import { useAuth } from './useAuth';
 
 export const useTransactions = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
-  // Performance optimization: prevent recreating these functions on every render
-  // though setTransactions is stable, it's good practice.
-  
-  useEffect(() => {
-    const saved = localStorage.getItem('transactions');
-    if (saved) {
-      setTransactions(JSON.parse(saved));
+  const fetchTransactions = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .order('date', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching transactions:', error);
+    } else {
+      setTransactions(data || []);
     }
-  }, []);
+    setLoading(false);
+  }, [user]);
 
-  const addTransaction = useCallback((transaction: Transaction) => {
-    setTransactions((prev) => {
-      const updated = [...prev, transaction];
-      localStorage.setItem('transactions', JSON.stringify(updated));
-      return updated;
-    });
-  }, []);
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
 
-  const updateTransaction = useCallback((updatedTransaction: Transaction) => {
-    setTransactions((prev) => {
-      const updated = prev.map((t) => 
-        t.id === updatedTransaction.id ? updatedTransaction : t
+  const addTransaction = async (transaction: Omit<Transaction, 'id' | 'user_id' | 'created_at'>) => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert([{ ...transaction, user_id: user.id }])
+      .select();
+
+    if (error) {
+      console.error('Error adding transaction:', error);
+      throw error;
+    } else if (data) {
+      setTransactions((prev) => [data[0], ...prev]);
+    }
+  };
+
+  const updateTransaction = async (updatedTransaction: Transaction) => {
+    if (!user) return;
+    
+    // Create a copy without read-only or metadata fields that shouldn't be manually updated
+    const { id, user_id, created_at, ...updateData } = updatedTransaction;
+    
+    const { error } = await supabase
+      .from('transactions')
+      .update(updateData)
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating transaction:', error);
+      throw error;
+    } else {
+      setTransactions((prev) =>
+        prev.map((t) => (t.id === updatedTransaction.id ? updatedTransaction : t))
       );
-      localStorage.setItem('transactions', JSON.stringify(updated));
-      return updated;
-    });
-  }, []);
+    }
+  };
 
-  const deleteTransaction = useCallback((id: string) => {
-    setTransactions((prev) => {
-      const updated = prev.filter((t) => t.id !== id);
-      localStorage.setItem('transactions', JSON.stringify(updated));
-      return updated;
-    });
-  }, []);
+  const deleteTransaction = async (id: string) => {
+    if (!user) return;
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting transaction:', error);
+      throw error;
+    } else {
+      setTransactions((prev) => prev.filter((t) => t.id !== id));
+    }
+  };
 
   const getTransactionById = useCallback((id: string) => {
-      // Since transactions state might not be loaded yet in some cases if called too early, 
-      // we can also check localStorage directly or rely on the state if it's there.
-      return transactions.find(t => t.id === id);
+    return transactions.find((t) => t.id === id);
   }, [transactions]);
 
   return {
     transactions,
+    loading,
     addTransaction,
     updateTransaction,
     deleteTransaction,
-    getTransactionById
+    getTransactionById,
+    refreshTransactions: fetchTransactions,
   };
 };

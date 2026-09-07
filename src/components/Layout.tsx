@@ -1,9 +1,18 @@
-import { Link, Outlet } from 'react-router';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { useTheme } from '../store/ThemeContext';
-import { MdDashboard, MdAddCircle, MdPieChart, MdDarkMode, MdLightMode } from 'react-icons/md';
+import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabase';
+import { MdDashboard, MdAddCircle, MdPieChart, MdDarkMode, MdLightMode, MdLogout } from 'react-icons/md';
 
 const Layout = () => {
   const { theme, toggleTheme } = useTheme();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/login');
+  };
 
   return (
     <div 
@@ -14,23 +23,38 @@ const Layout = () => {
           <Link to="/" className="text-xl font-bold flex items-center gap-2">
             Budget Tracker
           </Link>
-          <div className="flex items-center gap-6">
-            <Link to="/" className="hover:text-blue-200 flex items-center gap-1">
-              <MdDashboard /> <span className="hidden sm:inline">Dashboard</span>
-            </Link>
-            <Link to="/add" className="hover:text-blue-200 flex items-center gap-1">
-              <MdAddCircle /> <span className="hidden sm:inline">Add</span>
-            </Link>
-            <Link to="/summary" className="hover:text-blue-200 flex items-center gap-1">
-              <MdPieChart /> <span className="hidden sm:inline">Summary</span>
-            </Link>
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full hover:bg-blue-700 dark:hover:bg-blue-900 transition-colors"
-              aria-label="Toggle Theme"
-            >
-              {theme === 'light' ? <MdDarkMode size={20} /> : <MdLightMode size={20} />}
-            </button>
+          <div className="flex items-center gap-4 sm:gap-6">
+            {user && (
+              <>
+                <Link to="/" className="hover:text-blue-200 flex items-center gap-1">
+                  <MdDashboard /> <span className="hidden sm:inline">Dashboard</span>
+                </Link>
+                <Link to="/add" className="hover:text-blue-200 flex items-center gap-1">
+                  <MdAddCircle /> <span className="hidden sm:inline">Add</span>
+                </Link>
+                <Link to="/summary" className="hover:text-blue-200 flex items-center gap-1">
+                  <MdPieChart /> <span className="hidden sm:inline">Summary</span>
+                </Link>
+              </>
+            )}
+            <div className="flex items-center gap-2 sm:gap-4">
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-full hover:bg-blue-700 dark:hover:bg-blue-900 transition-colors"
+                aria-label="Toggle Theme"
+              >
+                {theme === 'light' ? <MdDarkMode size={20} /> : <MdLightMode size={20} />}
+              </button>
+              {user && (
+                <button
+                  onClick={handleLogout}
+                  className="p-2 rounded-full hover:bg-red-700 transition-colors"
+                  title="Logout"
+                >
+                  <MdLogout size={20} />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </nav>
