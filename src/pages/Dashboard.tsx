@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router';
 import { useTransactions } from '../hooks/useTransactions';
+import { useCurrency } from '../store/CurrencyContext';
 import { MdTrendingUp, MdTrendingDown, MdAccountBalanceWallet } from 'react-icons/md';
 
 const Dashboard = () => {
   const { transactions } = useTransactions();
+  const { currencySymbol } = useCurrency();
   const [filterType, setFilterType] = useState('All');
   const [filterCategory, setFilterCategory] = useState('All');
 
@@ -54,7 +56,7 @@ const Dashboard = () => {
             <span className="font-semibold uppercase text-xs tracking-wider">Total Balance</span>
           </div>
           <p className={`text-2xl font-bold ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            ${balance.toFixed(2)}
+            {currencySymbol}{balance.toFixed(2)}
           </p>
         </div>
         
@@ -65,7 +67,7 @@ const Dashboard = () => {
             <MdTrendingUp size={24} />
             <span className="font-semibold uppercase text-xs tracking-wider">Total Income</span>
           </div>
-          <p className="text-2xl font-bold">${totalIncome.toFixed(2)}</p>
+          <p className="text-2xl font-bold">{currencySymbol}{totalIncome.toFixed(2)}</p>
         </div>
         
         <div 
@@ -75,7 +77,7 @@ const Dashboard = () => {
             <MdTrendingDown size={24} />
             <span className="font-semibold uppercase text-xs tracking-wider">Total Expenses</span>
           </div>
-          <p className="text-2xl font-bold">${totalExpense.toFixed(2)}</p>
+          <p className="text-2xl font-bold">{currencySymbol}{totalExpense.toFixed(2)}</p>
         </div>
       </div>
 
@@ -138,7 +140,7 @@ const Dashboard = () => {
                   </div>
                 </div>
                 <p className={`font-bold ${t.type === 'Income' ? 'text-green-600' : 'text-red-600'}`}>
-                  {t.type === 'Income' ? '+' : '-'}${t.amount.toFixed(2)}
+                  {t.type === 'Income' ? '+' : '-'}{currencySymbol}{t.amount.toFixed(2)}
                 </p>
               </Link>
             ))

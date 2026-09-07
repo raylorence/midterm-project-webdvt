@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 import { useTransactions } from '../hooks/useTransactions';
+import { useCurrency } from '../store/CurrencyContext';
 import type { Transaction } from '../types';
 
 type FormData = Omit<Transaction, 'id'>;
@@ -8,6 +9,7 @@ type FormData = Omit<Transaction, 'id'>;
 const AddTransaction = () => {
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
   const { addTransaction } = useTransactions();
+  const { currencySymbol } = useCurrency();
   const navigate = useNavigate();
 
   const onSubmit = (data: FormData) => {
@@ -41,7 +43,7 @@ const AddTransaction = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold mb-2">Amount ($)</label>
+              <label className="block text-sm font-semibold mb-2">Amount ({currencySymbol})</label>
               <input
                 type="number"
                 step="0.01"

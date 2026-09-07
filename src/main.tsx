@@ -3,6 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router';
 import { ThemeProvider } from './store/ThemeContext';
+import { CurrencyProvider } from './store/CurrencyContext';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import AddTransaction from './pages/AddTransaction';
@@ -12,16 +13,18 @@ import Summary from './pages/Summary';
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route element={<Layout />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/add" element={<AddTransaction />} />
-            <Route path="/transaction/:id" element={<TransactionDetail />} />
-            <Route path="/summary" element={<Summary />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <CurrencyProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<Layout />}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/add" element={<AddTransaction />} />
+              <Route path="/transaction/:id" element={<TransactionDetail />} />
+              <Route path="/summary" element={<Summary />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </CurrencyProvider>
     </ThemeProvider>
   </React.StrictMode>
 );

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useTransactions } from '../hooks/useTransactions';
+import { useCurrency } from '../store/CurrencyContext';
 import { useForm } from 'react-hook-form';
 import type { Transaction } from '../types';
 import { MdDelete, MdEdit, MdSave, MdCancel, MdArrowBack } from 'react-icons/md';
@@ -9,6 +10,7 @@ const TransactionDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { transactions, updateTransaction, deleteTransaction } = useTransactions();
+  const { currencySymbol } = useCurrency();
   const [isEditing, setIsEditing] = useState(false);
   
   const transaction = transactions.find((t) => t.id === id);
@@ -110,7 +112,7 @@ const TransactionDetail = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold mb-1">Amount ($)</label>
+                <label className="block text-sm font-semibold mb-1">Amount ({currencySymbol})</label>
                 <input
                   type="number"
                   step="0.01"
@@ -163,7 +165,7 @@ const TransactionDetail = () => {
               </div>
               <div className="text-right">
                 <p className={`text-3xl font-bold ${transaction.type === 'Income' ? 'text-green-600' : 'text-red-600'}`}>
-                  {transaction.type === 'Income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                  {transaction.type === 'Income' ? '+' : '-'}{currencySymbol}{transaction.amount.toFixed(2)}
                 </p>
                 <p className="text-gray-500 text-sm mt-1">{new Date(transaction.date).toLocaleDateString()}</p>
               </div>

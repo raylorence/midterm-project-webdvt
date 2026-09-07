@@ -1,11 +1,13 @@
 import { useMemo } from 'react';
 import { useTransactions } from '../hooks/useTransactions';
 import { useTheme } from '../store/ThemeContext';
+import { useCurrency } from '../store/CurrencyContext';
 import { MdDarkMode, MdLightMode } from 'react-icons/md';
 
 const Summary = () => {
   const { transactions } = useTransactions();
   const { theme, toggleTheme } = useTheme();
+  const { currencySymbol, setCurrencySymbol } = useCurrency();
 
   const categoryTotals = useMemo(() => {
     const totals: Record<string, number> = {};
@@ -23,19 +25,38 @@ const Summary = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <h1 className="text-3xl font-bold">Spending Summary</h1>
-        <div 
-          className="flex items-center gap-4 bg-white dark:bg-gray-800 p-2 px-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700"
-        >
-          <span className="text-sm font-medium">Theme: {theme === 'light' ? 'Light' : 'Dark'}</span>
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 
-                       dark:hover:bg-gray-600 transition-colors"
+        <div className="flex flex-wrap gap-4">
+          <div 
+            className="flex items-center gap-2 bg-white dark:bg-gray-800 p-2 px-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700"
           >
-            {theme === 'light' ? <MdDarkMode /> : <MdLightMode />}
-          </button>
+            <label className="text-sm font-medium">Currency:</label>
+            <select
+              value={currencySymbol}
+              onChange={(e) => setCurrencySymbol(e.target.value)}
+              className="bg-gray-50 dark:bg-gray-700 border-none rounded-lg p-1 text-sm focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="₱">₱ (PHP)</option>
+              <option value="$">$ (USD)</option>
+              <option value="€">€ (EUR)</option>
+              <option value="£">£ (GBP)</option>
+              <option value="¥">¥ (JPY)</option>
+              <option value="฿">฿ (THB)</option>
+            </select>
+          </div>
+          <div 
+            className="flex items-center gap-4 bg-white dark:bg-gray-800 p-2 px-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700"
+          >
+            <span className="text-sm font-medium">Theme: {theme === 'light' ? 'Light' : 'Dark'}</span>
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 
+                         dark:hover:bg-gray-600 transition-colors"
+            >
+              {theme === 'light' ? <MdDarkMode /> : <MdLightMode />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -53,7 +74,7 @@ const Summary = () => {
                   <div key={category}>
                     <div className="flex justify-between text-sm mb-1">
                       <span className="font-medium">{category}</span>
-                      <span className="text-gray-500">${amount.toFixed(2)} ({percentage}%)</span>
+                      <span className="text-gray-500">{currencySymbol}{amount.toFixed(2)} ({percentage}%)</span>
                     </div>
                     <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
                       <div 
@@ -66,7 +87,7 @@ const Summary = () => {
               })}
               <div className="pt-4 border-t border-gray-100 dark:border-gray-700 mt-6 flex justify-between items-center">
                 <span className="font-bold">Total Expenses</span>
-                <span className="text-xl font-bold text-red-600">${totalExpenses.toFixed(2)}</span>
+                <span className="text-xl font-bold text-red-600">{currencySymbol}{totalExpenses.toFixed(2)}</span>
               </div>
             </div>
           ) : (
